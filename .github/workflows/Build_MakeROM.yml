@@ -19,7 +19,7 @@ jobs:
         prog: [makerom]
         include:
           - dist: ubuntu_x86_64
-            os: ubuntu-latest
+            os: ubuntu-20.04
             arch: x86_64
           - dist: macos_x86_64
             os: macos-latest
@@ -32,13 +32,13 @@ jobs:
             arch: x86_64
             binExt: .exe
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Compile ${{ matrix.prog }}
         working-directory: ${{ matrix.prog }}
         run: make PROJECT_PLATFORM_ARCH=${{ matrix.arch }} deps all
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.prog }}-${{ matrix.dist }}
           path: ./${{ matrix.prog }}/bin/${{ matrix.prog }}${{ matrix.binExt }}
