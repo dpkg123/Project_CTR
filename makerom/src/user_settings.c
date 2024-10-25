@@ -1,5 +1,8 @@
 #include "lib.h"
 
+// Private Constants
+static const u32 DEFAULT_STACK_SIZE = 0x1000;
+
 // Private Prototypes
 void DisplayHelp(char *app_name);
 void DisplayExtendedHelp(char *app_name);
@@ -95,6 +98,8 @@ void SetDefaults(user_settings *set)
 	set->common.outFormat = NCCH;
 	set->ncch.ncchType = format_not_set;
 	set->ncch.noCodePadding = false;
+	set->ncch.baremetal = false;
+	set->ncch.pageSize = DEFAULT_STACK_SIZE;
 
 	// RSF Settings
 	clrmem(&set->common.rsfSet, sizeof(rsf_settings));
@@ -362,6 +367,22 @@ int SetArgument(int argc, int i, char *argv[], user_settings *set)
 		}
 		set->ncch.noCodePadding = true;
 		return 1;
+	}
+	else if (strcmp(argv[i], "-baremetal") == 0) {
+		if (ParamNum) {
+			PrintNoNeedParam(argv[i]);
+			return USR_BAD_ARG;
+		}
+		set->ncch.baremetal = true;
+		return 1;
+	} else if (strcmp(argv[i], "-pagesize") == 0) {
+		if (ParamNum != 1) {
+			PrintArgReqParam(argv[i], 1);
+			return USR_BAD_ARG;
+		}
+		u32 pgsz = strtoul(argv[i + 1], NULL, 0);
+		set->ncch.pageSize = pgsz;
+		return 2;
 	}
 
 	// Ncch Rebuild Options
@@ -978,6 +999,8 @@ void DisplayExtendedHelp(char *app_name)
 	printf(" -desc          <apptype>:<fw>      Specify Access Descriptor template\n");
 	printf(" -exefslogo                         Include Logo in ExeFS (Required for usage on <5.0 systems)\n");
 	printf(" -nocodepadding                     For building sysmodules, do not pad .code segments\n");
+	printf(" -baremetal                         For building Kernel9/11, all segments are all RWX and not padded\n");
+	printf(" -pagesize      <size>              Override page size (default is 0x1000)\n");
 	printf("NCCH REBUILD OPTIONS:\n");
 	printf(" -code          <file>              Decompressed ExeFS \".code\"\n");
 	printf(" -exheader      <file>              Exheader template\n");
